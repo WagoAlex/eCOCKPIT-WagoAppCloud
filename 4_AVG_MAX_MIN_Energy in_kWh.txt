@@ -1,0 +1,19 @@
+let forDeviceId = 'd59749b9-f379-4b09-a4fb-9e3eab189e0c'; // KQL Controller
+
+let heatCapacityWater = 1.1625; // Wh/(kg*K)
+
+
+telemetry
+| where $__timeFilter(timestamp)
+| where (deviceId == forDeviceId and collectionKey == '1' and tagKey in ('Temperature1', 'Temperature2','Inflow2'))
+| project value = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), timestamp, tagKey
+| evaluate pivot(tagKey, any(value))
+| extend delta = Temperature1 - Temperature2
+| project timestamp , delta , Inflow2
+| summarize delta = avg(delta), flow = avg(Inflow2) by bin_at(timestamp, 1h, $__timeFrom)
+| extend consumption = delta * flow  * heatCapacityWater
+| project timestamp, ['Consumption'] = consumption
+| summarize sum(Consumption) 
+//| summarize arg_max(Consumption) 
+//| summarize arg_min(Consumption) 
+

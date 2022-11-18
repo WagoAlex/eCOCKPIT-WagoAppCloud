@@ -1,0 +1,58 @@
+// Variablennamen ggf. anpassen
+let var_device_id = '5cffcc21-91ba-42fc-9583-54fa82d5fe2b';
+let var_collection = '0'; // Platzhalter für die Collection muss angepasst werden
+let var_tagKey = 'Temperatur_Heizung_IN';  // Platzhalter für Variable/TagKey muss angepasst werden
+let var_tagKey2 = 'Hot_Water_daily'; // Platzhalter für den Wwert der gestreckt wwerden soll 
+
+
+let devices_view_tags = view () {
+    devices 
+    | summarize arg_max(updateTime, tags, isDeleted  ) by id 
+    | where isDeleted == false
+    | mv-expand todynamic(tags)
+    | project md_id = id,
+    md_tags_collectionKey = tostring(tags.collectionKey),
+    md_tags_key = tostring(tags.key),
+    md_tags_name = tostring(tags.name)  
+};
+
+let last_value_before_range = view() {
+    // Lässt den Graphen dort beginnen, wo der letzte Wert vor (oder gleich) dem Beginn der Zeitspanne lag
+    telemetry
+    | where deviceId == var_device_id and timestamp <= $__timeFrom
+    | summarize arg_max(timestamp, *) by browsePath
+    | where collectionKey == var_collection and tagKey == var_tagKey2
+    | extend 
+        timestamp = $__timeFrom, 
+        value = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value))
+};
+
+let latest_value_until_range_end = view() {
+    // Erweitert den Graphen für die tagKeys mit der korrekten Endung bis zum Ende, nimmt aber keine Werte aus der Zukunft!
+    telemetry
+    | where deviceId == var_device_id and timestamp <= $__timeTo
+    | summarize arg_max(timestamp, *) by browsePath
+    | where collectionKey == var_collection and tagKey == var_tagKey2
+    | extend 
+        timestamp = $__timeTo, 
+        value = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value))
+};
+
+
+telemetry
+| where deviceId == var_device_id and $__timeFilter(timestamp)
+| where collectionKey == var_collection and tagKey in (var_tagKey, var_tagKey2)
+
+| project queryValueField = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), browsePath, timestamp, collectionKey, tagKey, deviceId
+| summarize value = avg(queryValueField) by bin_at(timestamp, $__timeInterval, $__timeFrom), browsePath, collectionKey, tagKey, deviceId
+
+// Anfangs und Endpunkt für den Graphen einfügen
+| union latest_value_until_range_end, last_value_before_range
+
+| join kind=inner devices_view_tags on $left.deviceId == $right.md_id and $left.collectionKey == $right.md_tags_collectionKey and $left.tagKey == $right.md_tags_key
+| extend ['tagName'] = iff(strlen(md_tags_name) > 0, md_tags_name, md_tags_key)
+
+| project-keep timestamp, tagName, value
+| evaluate pivot(tagName, any(value))
+| sort by timestamp asc
+| take 10000

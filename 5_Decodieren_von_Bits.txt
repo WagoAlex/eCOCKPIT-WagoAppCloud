@@ -1,0 +1,25 @@
+let forDeviceId = 'd59749b9-f379-4b09-a4fb-9e3eab189e0c'; // KQL Controller
+
+telemetry
+| where $__timeFilter(timestamp)
+| where (deviceId == forDeviceId and collectionKey == '2' and tagKey in ('DO'))
+| project value = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), timestamp, tagKey
+| evaluate pivot(tagKey, any(value))
+| extend xBool_8MSB = tobool(binary_and(toint(DO),128))
+| extend xBool7 = tobool(binary_and(toint(DO),64))
+| extend xBool6 = tobool(binary_and(toint(DO),32))
+| extend xBool5 = tobool(binary_and(toint(DO),16))
+| extend xBool4 = tobool(binary_and(toint(DO),8))
+| extend xBool3 = tobool(binary_and(toint(DO),4))
+| extend xBool2 = tobool(binary_and(toint(DO),2))
+| extend xBool1_LSB = tobool(binary_and(toint(DO),1))
+| project timestamp, ['xBool_8MSB'] = xBool_8MSB , 
+['xBool7'] = xBool7 , 
+['xBool6'] = xBool6 ,
+['xBool5'] = xBool5 ,
+['xBool4'] = xBool4,
+['xBool3'] = xBool3, 
+['xBool2'] = xBool2,
+['xBool1_LSB'] = xBool1_LSB
+| order by timestamp asc
+

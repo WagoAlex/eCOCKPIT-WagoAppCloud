@@ -1,0 +1,12 @@
+let forDeviceId = 'd59749b9-f379-4b09-a4fb-9e3eab189e0c'; // KQL Controller
+let heatCapacityWater = 1.1625;
+
+telemetry
+| where $__timeFilter(timestamp)
+| where (deviceId == forDeviceId and collectionKey == '1' and tagKey in ('Inflow1', 'Inflow2','Temperature1', 'Temperature2'))
+| project value = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), timestamp, tagKey
+| evaluate pivot(tagKey, any(value))
+| extend delta2 = (Inflow1 - Inflow2) * (Temperature1-Temperature2) * heatCapacityWater
+| filter delta2 < 1000 
+| project timestamp, ['InflowNoise'] = delta2
+| order by timestamp asc

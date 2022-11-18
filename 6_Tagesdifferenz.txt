@@ -1,0 +1,40 @@
+let devices_view_tags = view () {
+devices 
+| summarize arg_max(updateTime, tags, isDeleted) by id 
+| where isDeleted == false
+| mv-expand todynamic(tags)
+| project md_id = id,
+md_tags_collectionKey = tostring(tags.collectionKey),
+md_tags_key = tostring(tags.key),
+md_tags_name = tostring(tags.name)
+};
+let T_2day = view() {
+telemetry
+| where timestamp >= (startofday(now(-2d))) and timestamp <= (endofday(now(-2d)))
+| where deviceId == 'd59749b9-f379-4b09-a4fb-9e3eab189e0c' and collectionKey == '1' and tagKey == 'Temperature1'
+| join kind=inner devices_view_tags on $left.deviceId == $right.md_id and $left.collectionKey == $right.md_tags_collectionKey and $left.tagKey == 
+$right.md_tags_key
+| extend ['joinedTagDisplayNameColumn'] = iff(strlen(md_tags_name) > 0, md_tags_name, md_tags_key)
+| project ['queryValueField'] = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), joinedTagDisplayNameColumn, timestamp
+| summarize ['queryValueField'] = avg(queryValueField) by bin_at(timestamp, $__interval, $__timeFrom), joinedTagDisplayNameColumn
+| project-keep timestamp, joinedTagDisplayNameColumn, queryValueField
+| sort by timestamp asc
+| summarize ['Energy in kWh'] = avg(queryValueField)
+| take 10000
+};
+let T_1day = view() {
+telemetry
+| where timestamp >= (startofday(now(-1d))) and timestamp <= (endofday(now(-1d)))
+| where deviceId == 'd59749b9-f379-4b09-a4fb-9e3eab189e0c' and collectionKey == '1' and tagKey == 'Temperature1'
+| join kind=inner devices_view_tags on $left.deviceId == $right.md_id and $left.collectionKey == $right.md_tags_collectionKey and $left.tagKey ==
+ $right.md_tags_key
+| extend ['joinedTagDisplayNameColumn'] = iff(strlen(md_tags_name) > 0, md_tags_name, md_tags_key)
+| project ['queryValueField'] = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), joinedTagDisplayNameColumn, timestamp
+| summarize ['queryValueField'] = avg(queryValueField) by bin_at(timestamp, $__interval, $__timeFrom), joinedTagDisplayNameColumn
+| project-keep timestamp, joinedTagDisplayNameColumn, queryValueField
+| sort by timestamp asc
+| summarize ['Energy in kWh'] = avg(queryValueField)
+| take 10000
+};
+union withsource=TableName T_2day, T_1day
+| order by TableName asc

@@ -1,0 +1,10 @@
+let forDeviceId = 'd59749b9-f379-4b09-a4fb-9e3eab189e0c'; // KQL Controller
+
+telemetry
+| where $__timeFilter(timestamp)
+| where (deviceId == forDeviceId and collectionKey == '1' and tagKey in ('Temperature1', 'Temperature2'))
+| project value = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), timestamp, tagKey
+| evaluate pivot(tagKey, any(value))
+| extend delta = Temperature1 - Temperature2
+| project timestamp, ['Temperaturspreizung'] = delta
+| order by timestamp asc
