@@ -1,0 +1,327 @@
+let forDeviceId = 'd59749b9-f379-4b09-a4fb-9e3eab189e0c'; // KQL Controller
+let forCollectionKey = '2';
+let forTagKey = 'DI';
+
+//let year = '2021'; // would be possible instead too
+let year = getyear($__timeFrom); 
+
+let january = todatetime(strcat(year, "-01-01"));
+let february = todatetime(strcat(year, "-02-01"));
+let march = todatetime(strcat(year, "-03-01"));
+let april = todatetime(strcat(year, "-04-01"));
+let may = todatetime(strcat(year, "-05-01"));
+let june = todatetime(strcat(year, "-06-01"));
+let july = todatetime(strcat(year, "-07-01"));
+let august = todatetime(strcat(year, "-08-01"));
+let september = todatetime(strcat(year, "-09-01"));
+let october = todatetime(strcat(year, "-10-01"));
+let november = todatetime(strcat(year, "-11-01"));
+let december = todatetime(strcat(year, "-12-01"));
+
+let rawData = view () {
+    telemetry
+    | where timestamp >= startofyear(january) and timestamp <= endofyear(january)
+    | where deviceId == forDeviceId and collectionKey == forCollectionKey and tagKey == forTagKey
+    | project ['value'] = iff(isnotnull(valueNumber), todouble(valueNumber), todouble(value)), timestamp
+};
+let total_jan = view() {
+    let monthValue = january;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend jan = end - start
+    | project-keep jan 
+};
+
+
+let total_feb = view() {
+    let monthValue = february;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend feb = end - start
+    | project-keep feb 
+};
+
+
+let total_mar = view() {
+    let monthValue = march;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend mar = end - start
+    | project-keep mar 
+};
+
+
+let total_apr = view() {
+    let monthValue = april;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend apr = end - start
+    | project-keep apr 
+};
+
+
+let total_may = view() {
+    let monthValue = may;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend may = end - start
+    | project-keep may 
+};
+
+
+let total_jun = view() {
+    let monthValue = june;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend jun = end - start
+    | project-keep jun 
+};
+
+
+let total_jul = view() {
+    let monthValue = july;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend jul = end - start
+    | project-keep jul 
+};
+
+
+let total_aug = view() {
+    let monthValue = august;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend aug = end - start
+    | project-keep aug 
+};
+
+
+let total_sep = view() {
+    let monthValue = september;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend sep = end - start
+    | project-keep sep 
+};
+
+
+let total_oct = view() {
+    let monthValue = october;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend oct = end - start
+    | project-keep oct 
+};
+
+
+let total_nov = view() {
+    let monthValue = november;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend nov = end - start
+    | project-keep nov 
+};
+
+
+let total_dec = view() {
+    let monthValue = december;
+    let firstValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp asc
+        | take 1
+        | project start = value, dummy = 1
+    };
+    let lastValue = view() {
+        rawData
+        | where timestamp between (startofmonth(monthValue) .. endofmonth(monthValue))
+        | order by timestamp desc
+        | take 1
+        | project end = value, dummy = 1
+    };
+    firstValue
+    | join lastValue on dummy
+    | extend dec = end - start
+    | project-keep dec 
+};
+
+
+total_jan
+| union total_feb
+| union total_mar
+| union total_apr
+| union total_may
+| union total_jun
+| union total_jul
+| union total_aug
+| union total_sep
+| union total_oct
+| union total_nov
+| union total_dec
+| project
+    ['01.'] = jan,
+    ['02.'] = feb,
+    ['03.'] = mar,
+    ['04.'] = apr,
+    ['05.'] = may,
+    ['06.'] = jun,
+    ['07.'] = jul,
+    ['08.'] = aug,
+    ['09.'] = sep,
+    ['10.'] = oct,
+    ['11.'] = nov,
+    ['12.'] = dec
